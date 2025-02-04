@@ -138,6 +138,79 @@ Tue Feb  4 11:07:22 2025
 |    0   N/A  N/A              75      G   /Xwayland                             N/A      |
 +-----------------------------------------------------------------------------------------+
 ```
+# Installing Docker
+### Install using the `apt` repository {#install-using-the-repository}
+
+Before you install Docker Engine for the first time on a new host machine, you
+need to set up the Docker `apt` repository. Afterward, you can install and update
+Docker from the repository.
+
+1. Set up Docker's `apt` repository.
+
+   ```bash
+   # Add Docker's official GPG key:
+   sudo apt-get update
+   sudo apt-get install ca-certificates curl
+   sudo install -m 0755 -d /etc/apt/keyrings
+   sudo curl -fsSL {{% param "download-url-base" %}}/gpg -o /etc/apt/keyrings/docker.asc
+   sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+   # Add the repository to Apt sources:
+   echo \
+     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] {{% param "download-url-base" %}} \
+     $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+   sudo apt-get update
+   ```
+
+2. Install the Docker packages.
+
+   {{< tabs >}}
+   {{< tab name="Latest" >}}
+
+   To install the latest version, run:
+
+   ```console
+   $ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+   ```
+  
+   {{< /tab >}}
+   {{< tab name="Specific version" >}}
+
+   To install a specific version of Docker Engine, start by listing the
+   available versions in the repository:
+
+   ```console
+   # List the available versions:
+   $ apt-cache madison docker-ce | awk '{ print $3 }'
+
+   5:{{% param "docker_ce_version" %}}-1~ubuntu.24.04~noble
+   5:{{% param "docker_ce_version_prev" %}}-1~ubuntu.24.04~noble
+   ...
+   ```
+
+   Select the desired version and install:
+
+   ```console
+   $ VERSION_STRING=5:{{% param "docker_ce_version" %}}-1~ubuntu.24.04~noble
+   $ sudo apt-get install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
+   ```
+
+   {{< /tab >}}
+   {{< /tabs >}}
+
+3. Verify that the installation is successful by running the `hello-world` image:
+
+   ```console
+   $ sudo docker run hello-world
+   ```
+
+   This command downloads a test image and runs it in a container. When the
+   container runs, it prints a confirmation message and exits.
+
+You have now successfully installed and started Docker Engine.
+
+{{% include "root-errors.md" %}}
 
 # Installing Nvidia-Docker
 
