@@ -138,7 +138,9 @@ Tue Feb  4 11:07:22 2025
 |    0   N/A  N/A              75      G   /Xwayland                             N/A      |
 +-----------------------------------------------------------------------------------------+
 ```
+
 # Installing Docker
+
 ### Install using the `apt` repository {#install-using-the-repository}
 
 Before you install Docker Engine for the first time on a new host machine, you
@@ -152,14 +154,14 @@ Docker from the repository.
    sudo apt-get update
    sudo apt-get install ca-certificates curl
    sudo install -m 0755 -d /etc/apt/keyrings
-   sudo curl -fsSL {{% param "download-url-base" %}}/gpg -o /etc/apt/keyrings/docker.asc
+   sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
    sudo chmod a+r /etc/apt/keyrings/docker.asc
 
    # Add the repository to Apt sources:
    echo \
-     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] {{% param "download-url-base" %}} \
-     $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+   $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
    sudo apt-get update
    ```
 
@@ -173,31 +175,25 @@ Docker from the repository.
    ```console
    $ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
    ```
-  
-   {{< /tab >}}
-   {{< tab name="Specific version" >}}
 
    To install a specific version of Docker Engine, start by listing the
    available versions in the repository:
 
    ```console
-   # List the available versions:
-   $ apt-cache madison docker-ce | awk '{ print $3 }'
-
-   5:{{% param "docker_ce_version" %}}-1~ubuntu.24.04~noble
-   5:{{% param "docker_ce_version_prev" %}}-1~ubuntu.24.04~noble
+   List the available versions:
+   apt-cache madison docker-ce | awk '{ print $3 }'
+   5:27.5.1-1~ubuntu.24.04~noble
+   5:27.5.0-1~ubuntu.24.04~noble
+   ...
    ...
    ```
 
    Select the desired version and install:
 
    ```console
-   $ VERSION_STRING=5:{{% param "docker_ce_version" %}}-1~ubuntu.24.04~noble
-   $ sudo apt-get install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
+   VERSION_STRING=5:27.5.1-1~ubuntu.24.04~noble
+   sudo apt-get install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin
    ```
-
-   {{< /tab >}}
-   {{< /tabs >}}
 
 3. Verify that the installation is successful by running the `hello-world` image:
 
@@ -288,13 +284,27 @@ details are found here
 https://hub.docker.com/r/gromacs/gromacs
 
 ```bash
-nvidia-docker pull gromacs/gromacs
+sudo docker pull gromacs/gromacs
 ```
 
 Test out this tutorial:
 http://www.mdtutorials.com/gmx/membrane_protein/01_pdb2gmx.html
+
 ```bash
 mkdir data ; cd data
 wget http://www.mdtutorials.com/gmx/membrane_protein/Files/KALP-15_princ.pdb
-docker run -v data:/data -w /data -it gromacs/gromacs gmx pdb2gmx -f KALP-15_princ.pdb -o KALP-15_processed.gro -ignh -ter -water spc
+docker run -v $PWD:/data -w /data -it gromacs/gromacs gmx pdb2gmx -f KALP-15_princ.pdb -o KALP-15_processed.gro -ignh -ter -water spc
 ```
+
+enable docker group 
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+groups $USER
+```
+
+Hardware-acceleration
+The command `gmx` in this container image will attempt to detect⁠ your CPU's AVX/SSE flags to use the corresponding optimized gmx binary.
+
+If you have an NVIDIA GPU, some GROMACS modules (in particular `mdrun`) can benefit hugely from hardware acceleration by using nvidia-docker⁠ which takes care of mapping the GPU device files. Simply replace `docker` above with `nvidia-docker` in the commands above.
